@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tarjimon</title>
+<style>
+  :root {
+    --bg1: #eef2ff;
+    --bg2: #fdf2f8;
+    --card: rgba(255,255,255,0.85);
+    --text: #1e1b3a;
+    --muted: #6b6f8a;
+    --accent: #6366f1;
+    --accent2: #ec4899;
+    --border: rgba(99,102,241,0.18);
+    --field: #ffffff;
+    --shadow: 0 10px 40px rgba(99,102,241,0.15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg1: #0f1024;
+      --bg2: #1d0f22;
+      --card: rgba(30,32,60,0.85);
+      --text: #eceefe;
+      --muted: #9ca0c4;
+      --accent: #818cf8;
+      --accent2: #f472b6;
+      --border: rgba(129,140,248,0.22);
+      --field: #171934;
+      --shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+    color: var(--text);
+    background: linear-gradient(135deg, var(--bg1), var(--bg2));
+    display: flex;
+    justify-content: center;
+    padding: 28px 16px 40px;
+  }
+  .wrap { width: 100%; max-width: 860px; }
+  header { text-align: center; margin-bottom: 22px; }
+  h1 {
+    margin: 0;
+    font-size: 2.1rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .sub { color: var(--muted); margin: 6px 0 0; }
+
+  .card {
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+  .langs {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  select {
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--field);
+    color: var(--text);
+    font: inherit;
+  }
+  select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .swap {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform .25s;
+  }
+  .swap:hover { transform: rotate(180deg); }
+
+  .panes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 680px) {
+    .panes, .langs { grid-template-columns: 1fr; }
+    .swap { justify-self: center; }
+  }
+  .pane {
+    background: var(--field);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+  }
+  textarea {
+    flex: 1;
+    width: 100%;
+    min-height: 180px;
+    resize: vertical;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 1.08rem;
+    line-height: 1.55;
+    padding: 4px;
+  }
+  textarea:focus { outline: none; }
+  .tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .icon-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    border-radius: 10px;
+    padding: 7px 11px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.92rem;
+  }
+  .icon-btn:hover { border-color: var(--accent); }
+  .counter { margin-left: auto; color: var(--muted); font-size: 0.82rem; }
+
+  .mic {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(99,102,241,0.4);
+    transition: transform .15s;
+    flex-shrink: 0;
+  }
+  .mic:hover { transform: scale(1.06); }
+  .mic:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .mic.rec { animation: pulse 1.2s infinite; background: #ef4444; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+    70% { box-shadow: 0 0 0 16px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 22px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  .status { color: var(--muted); font-size: 0.92rem; flex: 1; min-width: 200px; }
+  .status.err { color: #ef4444; }
+  .foot { text-align: center; color: var(--muted); font-size: 0.82rem; margin-top: 18px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Tarjimon</h1>
+    <p class="sub">Ikki tomondan ham yozing yoki gapiring — tarjima avtomatik chiqadi</p>
+  </header>
+
+  <div class="card">
+    <div class="langs">
+      <select id="selL" aria-label="Chap til"></select>
+      <button class="swap" id="swap" title="Tillar va matnlarni almashtirish" aria-label="Almashtirish">⇄</button>
+      <select id="selR" aria-label="O'ng til"></select>
+    </div>
+
+    <div class="panes">
+      <div class="pane">
+        <textarea id="taL" placeholder="Chap tilda yozing yoki mikrofon bilan gapiring..." maxlength="5000"></textarea>
+        <div class="tools">
+          <button class="mic" data-mic="l" title="Ovoz bilan kiritish" aria-label="Ovoz bilan kiritish">🎤</button>
+          <button class="icon-btn" data-speak="l">🔊 Eshitish</button>
+          <button class="icon-btn" data-copy="l">📋 Nusxalash</button>
+          <span class="counter" id="cntL">0 / 5000</span>
+        </div>
+      </div>
+
+      <div class="pane">
+        <textarea id="taR" placeholder="O'ng tilda yozing yoki mikrofon bilan gapiring..." maxlength="5000"></textarea>
+        <div class="tools">
+          <button class="mic" data-mic="r" title="Ovoz bilan kiritish" aria-label="Ovoz bilan kiritish">🎤</button>
+          <button class="icon-btn" data-speak="r">🔊 Eshitish</button>
+          <button class="icon-btn" data-copy="r">📋 Nusxalash</button>
+          <span class="counter" id="cntR">0 / 5000</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="go">Tarjima qilish</button>
+      <button class="btn ghost" id="clear">Tozalash</button>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+
+  <p class="foot">
+    Ovoz kiritish Chrome yoki Edge brauzerida ishlaydi. Birinchi marta ishlatganda mikrofonga ruxsat so'raladi.
+    Tarjima Google xizmati orqali, zaxira sifatida MyMemory orqali amalga oshadi.
+  </p>
+</div>
+
+<script>
+  // Tillar: tarjima kodi, ovoz tanish/o'qish kodi (BCP-47), o'zbekcha nomi
+  const LANGS = [
+    { code: 'uz', speech: 'uz-UZ', name: "O'zbek tili" },
+    { code: 'en', speech: 'en-US', name: 'Ingliz tili' },
+    { code: 'ru', speech: 'ru-RU', name: 'Rus tili' },
+    { code: 'kk', speech: 'kk-KZ', name: 'Qozoq tili' },
+    { code: 'ky', speech: 'ky-KG', name: "Qirg'iz tili" },
+    { code: 'tg', speech: 'tg-TJ', name: 'Tojik tili' },
+    { code: 'az', speech: 'az-AZ', name: 'Ozarbayjon tili' },
+    { code: 'tr', speech: 'tr-TR', name: 'Turk tili' },
+    { code: 'uk', speech: 'uk-UA', name: 'Ukrain tili' },
+    { code: 'de', speech: 'de-DE', name: 'Nemis tili' },
+    { code: 'fr', speech: 'fr-FR', name: 'Fransuz tili' },
+    { code: 'es', speech: 'es-ES', name: 'Ispan tili' },
+    { code: 'it', speech: 'it-IT', name: 'Italyan tili' },
+    { code: 'pt', speech: 'pt-BR', name: 'Portugal tili' },
+    { code: 'nl', speech: 'nl-NL', name: 'Gollandiya tili' },
+    { code: 'pl', speech: 'pl-PL', name: 'Polyak tili' },
+    { code: 'sv', speech: 'sv-SE', name: 'Shved tili' },
+    { code: 'ar', speech: 'ar-SA', name: 'Arab tili' },
+    { code: 'fa', speech: 'fa-IR', name: 'Fors tili' },
+    { code: 'hi', speech: 'hi-IN', name: 'Hind tili' },
+    { code: 'zh-CN', speech: 'zh-CN', name: 'Xitoy tili' },
+    { code: 'ja', speech: 'ja-JP', name: 'Yapon tili' },
+    { code: 'ko', speech: 'ko-KR', name: 'Koreys tili' }
+  ];
+
+  const $ = (id) => document.getElementById(id);
+  const S = {
+    l: { sel: $('selL'), ta: $('taL'), cnt: $('cntL'),
+         mic: document.querySelector('[data-mic="l"]'),
+         speak: document.querySelector('[data-speak="l"]'),
+         copy: document.querySelector('[data-copy="l"]') },
+    r: { sel: $('selR'), ta: $('taR'), cnt: $('cntR'),
+         mic: document.querySelector('[data-mic="r"]'),
+         speak: document.querySelector('[data-speak="r"]'),
+         copy: document.querySelector('[data-copy="r"]') }
+  };
+  const other = (side) => (side === 'l' ? 'r' : 'l');
+  const statusEl = $('status');
+  let lastSide = 'l';
+
+  function langOf(code) { return LANGS.find(l => l.code === code); }
+  function setStatus(msg, isErr = false) {
+    statusEl.textContent = msg;
+    statusEl.classList.toggle('err', isErr);
+  }
+  function counterUpdate(side) {
+    S[side].cnt.textContent = S[side].ta.value.length + ' / 5000';
+  }
+
+  // Tillarni to'ldirish
+  ['l', 'r'].forEach(side => {
+    LANGS.forEach(l => S[side].sel.add(new Option(l.name, l.code)));
+  });
+  S.l.sel.value = 'uz';
+  S.r.sel.value = 'en';
+
+  // Tarjima xizmatlari
+  function chunkText(text, max = 400) {
+    const parts = [];
+    let rest = text.trim();
+    while (rest.length > max) {
+      let cut = rest.lastIndexOf('. ', max);
+      if (cut < max * 0.5) cut = rest.lastIndexOf(' ', max);
+      if (cut <= 0) cut = max;
+      parts.push(rest.slice(0, cut + 1).trim());
+      rest = rest.slice(cut + 1).trim();
+    }
+    if (rest) parts.push(rest);
+    return parts;
+  }
+
+  async function viaGoogle(text, src, dst) {
+    const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl='
+      + encodeURIComponent(src) + '&tl=' + encodeURIComponent(dst)
+      + '&dt=t&q=' + encodeURIComponent(text);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Google ' + res.status);
+    const data = await res.json();
+    return data[0].map(s => s[0]).join('');
+  }
+
+  async function viaMyMemory(text, src, dst) {
+    const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text)
+      + '&langpair=' + encodeURIComponent(src + '|' + dst);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('MyMemory ' + res.status);
+    const data = await res.json();
+    if (String(data.responseStatus) !== '200') throw new Error(data.responseDetails || 'MyMemory xatosi');
+    return data.responseData.translatedText;
+  }
+
+  async function translateChunk(text, src, dst) {
+    try {
+      return await viaGoogle(text, src, dst);
+    } catch (e1) {
+      try {
+        return await viaMyMemory(text, src, dst);
+      } catch (e2) {
+        throw new Error('Tarjima xizmatlariga ulanib bo\'lmadi');
+      }
+    }
+  }
+
+  // Bir tomondagi matnni ikkinchi tomonga tarjima qilish
+  async function translateFrom(side) {
+    const text = S[side].ta.value.trim();
+    if (!text) { setStatus('Avval matn kiriting yoki gapiring.', true); return; }
+    const src = S[side].sel.value;
+    const dstSide = other(side);
+    const dst = S[dstSide].sel.value;
+    if (src === dst) { setStatus('Ikki til bir xil. Boshqa tilni tanlang.', true); return; }
+
+    $('go').disabled = true;
+    setStatus('Tarjima qilinmoqda...');
+    try {
+      const results = [];
+      for (const p of chunkText(text)) results.push(await translateChunk(p, src, dst));
+      S[dstSide].ta.value = results.join(' ');
+      counterUpdate(dstSide);
+      setStatus('Tayyor');
+    } catch (e) {
+      setStatus('Xatolik: ' + e.message + '. Internetni tekshirib, qayta urinib ko\'ring.', true);
+    } finally {
+      $('go').disabled = false;
+    }
+  }
+
+  // Matn yozilganda qaysi tomonda yozilganini eslab qolish
+  ['l', 'r'].forEach(side => {
+    S[side].ta.addEventListener('input', () => { lastSide = side; counterUpdate(side); });
+    S[side].sel.addEventListener('change', () => {
+      if (S[lastSide].ta.value.trim()) translateFrom(lastSide);
+    });
+    S[side].copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(S[side].ta.value);
+        setStatus('Nusxalandi');
+      } catch (e) {
+        setStatus('Nusxalab bo\'lmadi', true);
+      }
+    });
+    S[side].speak.addEventListener('click', () => speakText(S[side].ta.value.trim(), S[side].sel.value));
+  });
+
+  $('go').addEventListener('click', () => translateFrom(lastSide));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) translateFrom(lastSide);
+  });
+
+  // Tillar va matnlarni almashtirish
+  $('swap').addEventListener('click', () => {
+    const a = S.l.sel.value; S.l.sel.value = S.r.sel.value; S.r.sel.value = a;
+    const t = S.l.ta.value; S.l.ta.value = S.r.ta.value; S.r.ta.value = t;
+    counterUpdate('l'); counterUpdate('r');
+  });
+
+  // Tozalash: ikkala tomon ham tozalanadi
+  $('clear').addEventListener('click', () => {
+    S.l.ta.value = ''; S.r.ta.value = '';
+    counterUpdate('l'); counterUpdate('r');
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    setStatus('');
+    S.l.ta.focus();
+  });
+
+  // Matnni ovoz bilan o'qish
+  function speakText(text, code) {
+    if (!('speechSynthesis' in window) || !text) return;
+    speechSynthesis.cancel();
+    const lang = langOf(code).speech;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    // Shu tilning eng tabiiy eshitiladigan ovozini tanlash
+    const voices = speechSynthesis.getVoices()
+      .filter(x => x.lang && x.lang.toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
+    const score = (x) => (/natural|neural|online/i.test(x.name) ? 3 : 0)
+      + (/google/i.test(x.name) ? 2 : 0)
+      + (x.localService ? 0 : 1);
+    voices.sort((a, b) => score(b) - score(a));
+    const v = voices[0];
+    u.rate = 0.95;
+    if (v) u.voice = v;
+    else setStatus('Bu til uchun ovoz topilmadi. Kompyuteringizda bu tilning ovozi o\'rnatilmagan bo\'lishi mumkin.', true);
+    speechSynthesis.speak(u);
+  }
+
+  // Ovoz bilan kiritish (har ikki tomon uchun)
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, recRunning = false, recSide = null, recBase = '';
+
+  function setMicUI(side, on) {
+    const b = S[side].mic;
+    b.classList.toggle('rec', on);
+    b.textContent = on ? '⏹' : '🎤';
+  }
+
+  if (!SR) {
+    S.l.mic.disabled = true; S.r.mic.disabled = true;
+    S.l.mic.title = S.r.mic.title = 'Bu brauzer ovoz kiritishni qo\'llamaydi (Chrome yoki Edge kerak)';
+  } else {
+    rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+
+    rec.onresult = (e) => {
+      let interim = '', fin = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) fin += t; else interim += t;
+      }
+      if (fin) recBase = (recBase + ' ' + fin).trim();
+      S[recSide].ta.value = (recBase + ' ' + interim).trim();
+      counterUpdate(recSide);
+    };
+
+    rec.onerror = (e) => {
+      const msgs = {
+        'not-allowed': 'Mikrofonga ruxsat berilmadi. Manzil satridagi belgini bosib, Mikrofon uchun "Ruxsat berish" ni tanlang.',
+        'service-not-allowed': 'Brauzer ovoz xizmatiga ruxsat bermadi. Chrome yoki Edge\'ning oxirgi versiyasini ishlating.',
+        'language-not-supported': 'Bu til uchun ovoz kiritish qo\'llab-quvvatlanmaydi. Boshqa tilni tanlang.',
+        'no-speech': 'Ovoz eshitilmadi.',
+        'audio-capture': 'Mikrofon topilmadi.',
+        'network': 'Tarmoq xatosi (ovoz xizmati ishlamadi).'
+      };
+      setStatus(msgs[e.error] || ('Ovoz xatosi: ' + e.error), true);
+    };
+
+    rec.onend = () => {
+      if (!recRunning) return;
+      recRunning = false;
+      setMicUI(recSide, false);
+      if (S[recSide].ta.value.trim()) {
+        lastSide = recSide;
+        translateFrom(recSide);
+      }
+    };
+  }
+
+  function startMic(side) {
+    if (!rec) return;
+    recSide = side;
+    recBase = S[side].ta.value.trim();
+    rec.lang = langOf(S[side].sel.value).speech;
+    try {
+      rec.start();
+      recRunning = true;
+      setMicUI(side, true);
+      setStatus('Gapiring... tugatganda ⏹ ni bosing');
+    } catch (e) {
+      setStatus('Mikrofonni boshlab bo\'lmadi. Bir oz kutib qayta urinib ko\'ring.', true);
+    }
+  }
+
+  ['l', 'r'].forEach(side => {
+    S[side].mic.addEventListener('click', () => {
+      if (recRunning) rec.stop(); else startMic(side);
+    });
+  });
+
+  // Boshlang'ich holat
+  counterUpdate('l');
+  counterUpdate('r');
+</script>
+</body>
+</html>
